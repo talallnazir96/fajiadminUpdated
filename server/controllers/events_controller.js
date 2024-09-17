@@ -255,19 +255,7 @@ exports.eventsStatus = async (req, res) => {
 // *******************************
 // Events Stats
 // *******************************
-exports.eventsStats = async (req, res) => {
-  try {
-    const totalTicketsSold = await Event.aggregate([
-      { $group: { _id: null, total: { $sum: "$price" } } },
-    ]);
 
-    res.status(200).json({
-      totalTicketsSold: totalTicketsSold[0]?.total || 0,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 // ******************
 // get total seats

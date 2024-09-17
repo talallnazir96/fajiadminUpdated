@@ -295,7 +295,8 @@ function Events() {
     }
 
     // Fetch events based on the new status filter
-    fetchEvents(statusFilter);
+    fetchEvents(newValue === "1" ? "approved" : newValue === "2" ? "pending" : "declined");
+
   };
 
   return (

@@ -53,6 +53,7 @@ const ChartCard = () => {
         setLoading(false);
       });
   }, []);
+  console.log(data);
   return (
     <Card sx={{ Width: "100%", fontFamily: "Montserrat, sans-serif" }}>
       <CardContent>

@@ -24,17 +24,14 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-const data = [
-  { name: "Mon", sales: 4 },
-  { name: "Tue", sales: 3 },
-  { name: "Wed", sales: 2 },
-  { name: "Thu", sales: 2 },
-  { name: "Fri", sales: 10 },
-  { name: "Sat", sales: 12 },
-  { name: "Sun", sales: 15 },
-];
+
 
 const ViewEvent = () => {
+  const getDayName = (dateStr) => {
+    const date = new Date(dateStr);
+    const options = { weekday: 'short' }; // This will get the full day name
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  };
   const formatDate = (date) => {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -51,8 +48,18 @@ const ViewEvent = () => {
   useEffect(() => {
     const fetchTicketSold = async () => {
       try {
-        const response = await axios.get(`${constant.apiUrl}/events/stats`);
-        setTicketSold(response.data);
+        if (viewEvent._id) {
+          const response = await axios.get(
+            `${constant.apiUrl}/tickets/totalTicketsSold/${viewEvent._id}`
+          );
+          console.log(response.data.ticketSalesByDate);
+          const fetchedData = response.data.ticketSalesByDate.map((item) => ({
+            name: getDayName(item._id), // Assuming _id is the date
+            sales: item.ticketsSold,
+          }));
+          console.log(fetchedData.name);
+          setTicketSold(fetchedData);
+        }
       } catch (err) {
         setError("Error fetching sold tickets");
         console.error(err);
@@ -60,49 +67,42 @@ const ViewEvent = () => {
     };
 
     fetchTicketSold();
-  }, []);
-
+  }, [viewEvent]);
+  console.log(ticketSold);
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchEvent = async () => {
       try {
-        const response = await axios.get(
-          `${constant.apiUrl}/users/getPurchasedUser`,
-          {
-            params: { userId: viewEvent.userId },
-          }
-        );
+        const response = await axios.get(`${constant.apiUrl}/events/${id}`);
         const data = response.data;
-        data.registrationDate = formatDate(data.registrationDate);
-        setUser(data);
+        setViewEvent(data);
+console.log(data);
+        // Fetch user data after event data is set
+        const userResponse = await axios.get(
+          `${constant.apiUrl}/tickets/usersByEvent/${data._id}`
+        );
+        const users = userResponse.data;
+        users.forEach(user => {
+          user.registrationDate = formatDate(user.registrationDate);
+        });
+        setUser(users);
       } catch (err) {
-        setError("Error fetching users.");
+        setError("Error fetching event or user.");
         console.error(err);
       }
     };
 
-    fetchUsers();
+    fetchEvent();
   }, [id]);
-
-  useEffect(() => {
-    axios
-      .get(`${constant.apiUrl}/events/${id}`)
-      .then((response) => {
-        const data = response.data;
-
-        setViewEvent(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching event:", error);
-      });
-  }, [id]);
-
+  console.log(viewEvent._id);
+  console.log(user);
+  const totalSales = ticketSold.reduce((acc, item) => acc + item.sales, 0);
   const [columnDefs] = useState([
-    {
-      headerName: "User ID",
-      field: "userId",
-      filter: true,
-      floatingFilter: true,
-    },
+    // {
+    //   headerName: "User ID",
+    //   field: "ID",
+    //   filter: true,
+    //   floatingFilter: true,
+    // },
     {
       headerName: "User Name",
       field: "userName",
@@ -130,7 +130,7 @@ const ViewEvent = () => {
     },
     {
       headerName: "Tickets Purchased",
-      field: "tickets_purchased",
+      field: "ticketsPurchased",
       filter: true,
       floatingFilter: true,
     },
@@ -155,7 +155,7 @@ const ViewEvent = () => {
           >
             Event Details
           </Typography>
-       
+
           <Grid container sx={{ marginTop: "4%" }}>
             <Grid item xs={12} sm={6} md={6}>
               <Typography
@@ -306,16 +306,18 @@ const ViewEvent = () => {
               >
                 Tickets Sold
               </Typography>
+
               <Typography
                 variant="h3"
                 sx={{ fontFamily: "Montserrat, sans-serif" }}
               >
-                {ticketSold.totalTicketsSold}
+                {totalSales}
               </Typography>
+
               <Box sx={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={data}
+                    data={ticketSold}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -348,7 +350,7 @@ const ViewEvent = () => {
             style={{ height: 400, width: "100%" }}
           >
             <AgGridReact
-              rowData={[user]}
+              rowData={user}
               columnDefs={columnDefs}
               pagination={true}
               paginationPageSize={6}

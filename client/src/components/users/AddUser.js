@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useMediaQuery, useTheme } from "@mui/material";
 import AdminDetails from "../../components/logs/AdminDetails";
 import { AuditLogs } from "../../components/logs/AuditLogs";
+import { v4 as uuidv4 } from 'uuid';
 
 const role = [
   {
@@ -73,6 +74,7 @@ const AddUser = () => {
     email: "",
     status: "",
     userRole: "",
+    userId: uuidv4(),
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -87,6 +89,7 @@ const AddUser = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
+      userId: formData.userId, 
       userName: formData.userName,
       password: formData.password,
       email: formData.email,

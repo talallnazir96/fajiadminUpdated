@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "active", // active, inActive
   },
-  ticketsPurchased: { type: Number, default: 0 }
+  ticketsPurchased: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Manageusers", UserSchema);

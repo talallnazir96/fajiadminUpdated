@@ -1,6 +1,8 @@
 const Ticket = require("../models/tickets_model");
 const User = require("../models/user_model");
 const Event = require("../models/events_model");
+const mongoose = require("mongoose");
+
 const ticketValidationSchema = require("../validators/tickets_Validators");
 const formatDate = (date) => {
   const d = new Date(date);
@@ -47,10 +49,14 @@ exports.deleteTicket = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.status(200).json({ message: "Ticket deleted successfully", deletedTicket });
+    res
+      .status(200)
+      .json({ message: "Ticket deleted successfully", deletedTicket });
   } catch (err) {
     console.error("Error deleting ticket:", err);
-    res.status(500).json({ error: "Error deleting ticket", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Error deleting ticket", details: err.message });
   }
 };
 // *************
@@ -63,7 +69,7 @@ exports.createTicket = async (req, res) => {
     ticketId,
     partyName,
     userName,
-    purchasedDate,
+   
     price,
     promoCode,
   } = req.body;
@@ -130,17 +136,106 @@ exports.getTicketById = async (req, res) => {
 // *********************
 // Filter events
 // *********************
-exports.filterTickets = async(req,res)=>{
-  const {filter,value} = req.query;
-  const filterOptions ={
+exports.filterTickets = async (req, res) => {
+  const { filter, value } = req.query;
+  const filterOptions = {
     event: { eventId: value },
     user: { userId: value },
     date: { purchaseDate: new Date(value) },
-  }
+  };
   try {
     const filterTicket = await Ticket.find(filterOptions[filter]);
     res.status(200).json(filterTicket);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', details:error.message });
+    res.status(500).json({ message: "Server error", details: error.message });
   }
-}
+};
+// exports.getTotalTicketsSold = async (req, res) => {
+//   const { eventId } = req.params;
+
+//   console.log("eventId received:", eventId); // Debugging line
+
+//   if (!eventId || !mongoose.isValidObjectId(eventId)) {
+//     return res.status(400).json({ error: "Invalid event ID" });
+//   }
+
+//   try {
+//     const count = await Ticket.countDocuments({ eventId: eventId });
+//     if (count === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: "No tickets found for this event." });
+//     }
+//     return res.status(200).json({ totalTicketsSold: count });
+//   } catch (error) {
+//     console.error("Error calculating total tickets sold:", error);
+//     return res
+//       .status(500)
+//       .json({ error: "An error occurred while calculating tickets sold." });
+//   }
+// };
+exports.getTotalTicketsSold = async (req, res) => {
+  const { eventId } = req.params;
+
+  console.log("eventId received:", eventId); // Debugging line
+
+  if (!eventId || !mongoose.isValidObjectId(eventId)) {
+    return res.status(400).json({ error: "Invalid event ID" });
+  }
+
+  try {
+    // Group tickets by the day they were sold and count the total for each day
+    const ticketSalesByDate = await Ticket.aggregate([
+      { $match: { eventId: new mongoose.Types.ObjectId(eventId) } }, // Match the event ID
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$purchasedDate" }, // Group by date
+          },
+          ticketsSold: { $sum: 1 }, // Count tickets
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by date
+    ]);
+
+    if (ticketSalesByDate.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No tickets found for this event." });
+    }
+
+    return res.status(200).json({ ticketSalesByDate });
+  } catch (error) {
+    console.error("Error calculating total tickets sold:", error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while calculating tickets sold." });
+  }
+};
+// In your ticket controller file
+exports.getUsersByEventId = async (req, res) => {
+  try {
+    const eventId = req.params.eventId;
+    // Find all tickets for the event
+    const tickets = await Ticket.find({ eventId: eventId }).select('userId');
+    
+    if (tickets.length === 0) {
+      return res.status(404).json({ error: "No tickets found for this event" });
+    }
+    
+    // Extract userIds from tickets
+    const userIds = tickets.map(ticket => ticket.userId);
+    
+    // Find users by userIds
+    const users = await User.find({ _id: { $in: userIds } });
+    
+    if (users.length === 0) {
+      return res.status(404).json({ error: "No users found for these tickets" });
+    }
+    
+    res.status(200).json(users);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ error: "Error fetching users", details: err.message });
+  }
+};

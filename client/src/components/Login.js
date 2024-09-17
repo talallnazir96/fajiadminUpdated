@@ -77,17 +77,20 @@ const Login = ({ setAuthToken }) => {
           variant="outlined"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          autoComplete="off" 
         />
         <TextField
           required
+
           fullWidth
           id="password"
-          type={"password"}
+          type="password"
           label="Password"
           margin="normal"
           variant="outlined"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="off" 
      
         />
         <Button

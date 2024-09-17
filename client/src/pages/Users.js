@@ -75,8 +75,9 @@ function Users() {
   useEffect(() => {
     fetchAllUsers(userRoleFilter);
   }, [userRoleFilter]);
+  
   const [columnDefs] = useState([
-    { headerName: "User ID", field: "ID", filter: true, floatingFilter: true },
+    // { headerName: "User ID", field: "ID", filter: true, floatingFilter: true },
     {
       headerName: "User Name",
       field: "userName",

@@ -5,46 +5,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useMediaQuery, useTheme } from "@mui/material";
 import constant from "../constant";
-const auditLogs = [
-  {
-    id: 1,
-    timestamp: "2024-07-10T10:00:00Z",
-    user: {
-      id: 123,
-      username: "admin_user",
-    },
-    action: "create",
-    entity: "user",
-    entityId: 456,
-    changes: {
-      username: {
-        old: null,
-        new: "new_user",
-      },
-      email: {
-        old: null,
-        new: "new_user@example.com",
-      },
-    },
-  },
-  {
-    id: 2,
-    timestamp: "2024-07-10T11:00:00Z",
-    user: {
-      id: 124,
-      username: "admin_user2",
-    },
-    action: "update",
-    entity: "user",
-    entityId: 456,
-    changes: {
-      email: {
-        old: "new_user@example.com",
-        new: "updated_user@example.com",
-      },
-    },
-  },
-];
+
 
 const Audit = () => {
   const formatDate = (date) => {
@@ -88,7 +49,7 @@ const Audit = () => {
     return "body1"; // Default variant
   };
   const columnDefs = [
-    { headerName: "ID", field: "ID", filter: true, floatingFilter: true },
+    // { headerName: "ID", field: "ID", filter: true, floatingFilter: true },
     {
       headerName: "Timestamp",
       field: "timeStamp",
@@ -110,9 +71,11 @@ const Audit = () => {
     {
       headerName: "Changes",
       field: "changes",
+     
       cellRenderer: function (params) {
         return JSON.stringify(params.value);
       },
+      
     },
   ];
 
@@ -122,7 +85,7 @@ const Audit = () => {
     resizable: true,
   };
   return (
-    <Grid container spacing={3} sx={{ marginTop: "9%", marginBottom: "2%" }}>
+    <Grid container spacing={1} sx={{ marginTop: "9%", marginBottom: "2%" }}>
       <Grid item xs={10} sm={10} md={10}>
         <Typography
           variant={getVariant()}

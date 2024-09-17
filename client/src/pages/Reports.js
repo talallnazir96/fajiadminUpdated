@@ -81,7 +81,7 @@ const Reports = () => {
   };
 
   const columnDefs = [
-    { headerName: "ID", field: "ID", filter: true, floatingFilter: true },
+    // { headerName: "ID", field: "ID", filter: true, floatingFilter: true },
     {
       headerName: "Timestamp",
       field: "timeStamp",

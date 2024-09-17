@@ -62,7 +62,15 @@ const UpdateEvent = () => {
     price: "",
     description: "",
   });
-
+  const [originalData, setOriginalData] = useState({
+    eventTitle: "",
+    date: "",
+    event_organizer: "",
+    status: "",
+    location: "",
+    price: "",
+    description: "",
+  });
   useEffect(() => {
     axios
       .get(`http://localhost:5000/api/events/${id}`)
@@ -70,6 +78,7 @@ const UpdateEvent = () => {
         const data = response.data;
         data.date = formatDate(data.date);
         setFormData(data);
+        setOriginalData(data);
       })
       .catch((error) => {
         console.error("Error fetching post data:", error);
@@ -100,6 +109,12 @@ const UpdateEvent = () => {
       price: formData.price,
       description: formData.description,
     };
+    const changes = {};
+    Object.keys(payload).forEach((key) => {
+      if (formData[key] !== originalData[key]) {
+        changes[key] = { old: originalData[key], new: formData[key] };
+      }
+    });
     try {
       const response = await axios.put(
         `http://localhost:5000/api/events/update-event/${id}`,
@@ -111,26 +126,24 @@ const UpdateEvent = () => {
         }
       );
       // console.log("Event updated successfully:", response.data);
-    
+
       if (response.status === 200 || response.status === 201) {
         setSnackbarOpen(true);
         setSnackbarMessage("Event updated successfully!");
         setSnackbarSeverity("success");
-        await AuditLogs(
-          1,
-          new Date(),
-          "Update Event",
-          userDetails.userId,
-          userDetails.username,
-          {
-            title: { old: null, new: formData.eventTitle },
-            content: { old: null, new: formData.description },
-          }
-        );
+        if (Object.keys(changes).length > 0) {
+          await AuditLogs(
+            1, // Action type or ID
+            new Date(), // Current date/time
+            "Update Event", // Action description
+
+            userDetails.username, // Username
+            changes // Only log the fields that were changed
+          );
+        }
         setTimeout(() => {
           navigate("/events");
         }, 5000);
-    
       } else {
         setSnackbarOpen(true);
         setSnackbarMessage("An error occurred!");
@@ -152,7 +165,6 @@ const UpdateEvent = () => {
     setSnackbarSeverity("success");
     setDialogOpen(false);
     setSnackbarOpen(true);
- 
   };
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);

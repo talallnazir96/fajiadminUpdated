@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const eventsSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Manageusers', 
-    required: true, 
+    ref: "Manageusers",
+    required: true,
   },
   eventTitle: {
     type: String,
@@ -45,11 +45,11 @@ const eventsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  platform_expense:{
+  platform_expense: {
     type: String,
-    required: true
-  }
-
+    required: true,
+  },
+  ticketsSold: { type: Number, default: 0 }, // Optional for quick access
 });
 
 module.exports = mongoose.model("events", eventsSchema);

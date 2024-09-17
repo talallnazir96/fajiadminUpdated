@@ -61,3 +61,10 @@ exports.getCurrentYearUsers = async (req, res) => {
     res.status(500).json({ message: "Error fetching data", error });
   }
 };
+exports.getTotalTicketsSoldByDate = async (req, res) => {
+  try {
+    const date = await Ticket.find({date})
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};

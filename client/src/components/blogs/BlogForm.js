@@ -22,13 +22,14 @@ const BlogForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { userDetails } = AdminDetails();
- 
+
   const [template, setTemplate] = useState({
     title: "",
     content: " ",
     short_desc: "",
     image: "",
   });
+  
   const [isEditMode, setIsEditMode] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -49,7 +50,6 @@ const BlogForm = () => {
   };
   useEffect(() => {
     if (id) {
-   
       axios
         .get(`${constant.apiUrl}/blogs/${id}`)
         .then((response) => {
@@ -75,7 +75,6 @@ const BlogForm = () => {
   };
 
   const handleSubmit = async (event) => {
-    
     event.preventDefault();
     const formData = new FormData();
     formData.append("title", template.title);
@@ -91,7 +90,7 @@ const BlogForm = () => {
       const url = isEditMode
         ? `${constant.apiUrl}/blogs/${id}`
         : `${constant.apiUrl}/blogs/`;
-      
+
       const method = isEditMode ? "put" : "post";
 
       const response = await axios({
@@ -107,38 +106,25 @@ const BlogForm = () => {
 
       if (response.status === 200 || response.status === 201) {
         setSnackbarOpen(true);
-     
+
         setSnackbarMessage(
           isEditMode
             ? "Post Edited successfully!"
             : "Post Created successfully!"
         );
         setSnackbarSeverity("success");
-        await isEditMode?AuditLogs(
-          1,
-          new Date(),
-          "Edit Blog",
-          userId,
-          userName,
-          {
-            title: { old: null, new: template.title },
-            content: { old: null, new: template.content },
-          }
-        ): AuditLogs(
-          1,
-          new Date(),
-          "Create Blog",
-          userId,
-          userName,
-          {
-            title: { old: null, new: template.title },
-            content: { old: null, new: template.content },
-          }
-        );
+        (await isEditMode)
+          ? AuditLogs(1, new Date(), "Edit Blog", userId, userName, {
+              title: { old: null, new: template.title },
+              content: { old: null, new: template.content },
+            })
+          : AuditLogs(1, new Date(), "Create Blog", userId, userName, {
+              title: { old: null, new: template.title },
+              content: { old: null, new: template.content },
+            });
         setTimeout(() => {
           navigate("/blogs");
         }, 5000);
-     
       } else {
         setSnackbarOpen(true);
         setSnackbarMessage("An error occurred!");
