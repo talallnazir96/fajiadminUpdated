@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",  // Starts the app normally
+    "dev": "nodemon index.js", // Runs the app with nodemon for hot-reloading in development
+    "build": "echo 'Building the project...'", // Placeholder for build steps, customize based on the project
+    "test": "echo \"Error: no test specified\" && exit 1", // Replace with actual test runner like jest or mocha
+    "lint": "eslint .", // Add this if you are using ESLint for code linting
+    "prestart": "npm run build" // Prestart script to run the build before starting
   },
   "keywords": [],
   "author": "",
